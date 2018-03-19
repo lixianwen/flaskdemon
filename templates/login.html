@@ -1,0 +1,24 @@
+{% extends 'base.html'%}
+{% block body %}
+<h3>Login in</h3>
+{% if error %}
+<p><em>Error:&nbsp</em><strong>{{ error }}</strong></p>
+{% endif %}
+<form method="post" action="{{ url_for('login') }}">
+    <p>
+        <label for="loginname">用户名</label>
+        <input id="loginname" tabindex="1" type="text"  autofocus autocomplete="off" required name="username" placeholder="用户名">
+    </p>
+    <p>
+        <label for="loginpwd">密码</label>
+        <input id="loginpwd" type="password" tabindex="2" autocomplete="off" required name="passwd" placeholder="密码">
+    </p>
+    <a>
+        <label for="verify">随机码</label>
+        <input id="verify" type="text" tabindex="3" required name="verifycode" placeholder="请输入验证码">
+        <!-- <img src="data:image/jpg;base64,{{ session.src }}" alt="随机码"/> -->
+        <img src="{{ url_for('image') }}">
+    </p>
+    <input type="submit" value="Submit"> <input type="reset" value="重置按钮">
+</form>
+{% endblock %}

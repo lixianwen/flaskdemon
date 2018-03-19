@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block body %}
+  {% if session.logged_in %}
+    <form action="{{ url_for('add_article') }}" method="post" class="add-entry">
+      <p>
+        <label for="_title">标题</label>
+        <input id="_title" type="text" size=16 maxlength="64" name="title" autofocus required>
+      </p>
+      <p>
+        <textarea name="text" rows=5 cols=40 wrap="hard" required></textarea>
+        <input type='submit' value='发表'>
+      </p>
+    </form>
+  {% endif %}
+  <dl class="entries">
+  {% for entry in returns %}
+    <dt>{{ entry.title}}</dt>
+    <dd>{{ entry.text|safe }}<dd>
+    <dd style="text-align: right"><small>{{ entry.pub_time }}</small></dd>
+  {% else %}
+    <dt><em>Unbelievable.  No entries here so far</em></dt>
+  {% endfor %}
+  </dl>
+{% endblock %}

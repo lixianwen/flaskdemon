@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Blog</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+    <meta charset="utf8"/>
+</head>
+<body>
+<div class="page">
+  <header>
+  <h1>Flaskr</h1>
+  </header>
+  <div class="metanav">
+  {% if not session.logged_in %}
+    <a href="{{ url_for('login') }}">登录</a>
+    <a href="{{ url_for('register') }}">注册</a>
+  {% else %}
+      <span>您好, {{ session.username }}</span>&nbsp&nbsp<a href="{{ url_for('logout') }}">退出</a>
+  {% endif %}
+  </div>
+  {% if get_flashed_messages() %}
+      {% for message in get_flashed_messages() %}
+        <div class="flash">{{ message }}</div>
+      {% endfor %}
+  {% endif %}
+  {% block body %}{% endblock %}
+</div>
+<footer class="abc">
+    <p>&copy;2018 Flaskr. All Rights Reserved, Flaskr Inc.</p>
+</footer>
+</body>
+</html>

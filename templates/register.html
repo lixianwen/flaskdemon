@@ -1,0 +1,34 @@
+{% extends 'base.html'%}
+{% block body %}
+<h3>欢迎注册</h3>
+<h4>已有帐号？<a href="{{ url_for('login') }}">请登录</a></h4>
+{% if error %}
+<p><em>Error:&nbsp</em><strong>{{ error }}</strong></p>
+{% endif %}
+<div id="form-item-accout">
+<form method="post" action="{{ url_for('register') }}">
+    <p>
+        <label for="regname">用户名</label>
+        <input id="regname" tabindex="1" type="text"  autofocus autocomplete="off" required name="username" placeholder="您的账户名和登录名">
+    </p>
+    <p>
+        <label for="regpwd">设置密码</label>
+        <input id="regpwd" type="password" tabindex="2" autocomplete="off" required name="password" placeholder="建议至少使用两种字符组合" size="25">
+    </p>
+    <p>
+        <label for="regpwdrepeat">确认密码</label>
+        <input id="regpwdrepeat" tabindex="3" type="password" autocomplete="off" required name="pwdrepeat" size="25">
+    </p>
+    <p>
+        <label for="regemail">邮箱地址</label>
+        <input id="regemail" tabindex="4" type="email" autocomplete="off" required name="email">
+    </p>
+    <p>
+        <label for="verify">随机码</label>
+        <input id="verify" type="text" tabindex="5" required name="verifycode" placeholder="请输入验证码">
+        <img src="{{ url_for('image') }}">
+    </p>
+    <input type="submit" value="Submit"> <input type="reset" value="重置按钮">
+</form>
+</div>
+{% endblock %}
