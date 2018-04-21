@@ -11,7 +11,7 @@ from flask import flash
 from flask import url_for
 from flask import redirect
 from datetime import datetime
-from flask.ext.sqlalchemy import SQLAlchemy
+from flask_sqlalchemy import SQLAlchemy
 from verifycode import VeifyCode
 from flask import make_response
 
