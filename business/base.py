@@ -2,6 +2,7 @@ from flask import Flask
 
 from business.restful import api
 from business.views import resource_list
+from business.signal import subscribe_model_saved, subscribe_request_tearing_down
 
 
 app = Flask(__name__)
@@ -18,6 +19,9 @@ def init_app(flask_app):
     print('resource_list....', resource_list)
     for resource in resource_list:
         api.add_resource(resource['class'], *resource['urls'], **resource['kwargs'])
+
+    subscribe_model_saved(flask_app.name)
+    subscribe_request_tearing_down(flask_app)
 
     print('Flask application init completed.....')
     return flask_app
