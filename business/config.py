@@ -1,1 +1,2 @@
 SCHEDULER_API_ENABLED = True
+MY_SENDER = 'my_sender'
