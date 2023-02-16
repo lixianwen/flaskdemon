@@ -3,6 +3,7 @@ from flask import Flask, request_tearing_down
 from business.restful import api
 from business.views import resource_list
 from business.signal import when_request_tearing_down
+from business.extensions import scheduler
 
 app = Flask(__name__)
 
@@ -20,6 +21,8 @@ def init_app(flask_app):
         api.add_resource(resource['class'], *resource['urls'], **resource['kwargs'])
 
     request_tearing_down.connect(when_request_tearing_down, flask_app)
+
+    scheduler.init_app(flask_app)
 
     print('Flask application init completed.....')
     return flask_app
