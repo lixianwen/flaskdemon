@@ -4,17 +4,16 @@ from threading import RLock
 
 import typing_extensions as te
 
-F: te.TypeAlias = t.Callable[..., t.Any]
+P = te.ParamSpec('P')
+T = t.TypeVar('T')
 
-_T = t.TypeVar('_T')  # Can be anything
 
-
-def evaluated_once_simple(func: F) -> F:
+def evaluated_once_simple(func: t.Callable[[], T]) -> t.Callable[[], T]:
     """A decorator cache function's return value"""
     value = None
 
     @wraps(func)
-    def wrapper():
+    def wrapper() -> T:
         """Wrap :func:`func` without arguments"""
         nonlocal value
 
@@ -55,7 +54,7 @@ class cached_property:
 
     def __init__(
         self,
-        fget: F,
+        fget: t.Callable,
         name: t.Optional[str] = None,
         doc: t.Optional[str] = None
     ) -> None:
@@ -64,16 +63,16 @@ class cached_property:
         self.doc = doc or fget.__doc__
         self.lock = RLock()
     
-    def __get__(self, instance: object, owner: t.Optional[t.Type] = None) -> _T:
+    def __get__(self, instance: object, owner: t.Optional[t.Type] = None) -> T:
         if instance is None:
             return self  # type: ignore
         
         null = object()
-        value: _T = vars(instance).get(self.func_name, null)
+        value: T = vars(instance).get(self.func_name, null)
         if value is null:
             with self.lock:
                 # check if another thread filled cache while we awaited lock
-                value: _T = vars(instance).get(self.func_name, null)  # type: ignore
+                value: T = vars(instance).get(self.func_name, null)  # type: ignore
                 if value is null:
                     value = self.fget(instance)
                     instance.__dict__[self.func_name] = value
