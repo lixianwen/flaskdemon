@@ -108,3 +108,12 @@ class FakeFlask:
 
         if view_func is not None:
             self.view_functions[endpoint] = view_func
+
+    def run(self, host: str, port: int, debug: bool, **options) -> None:
+        options.setdefault('use_reloader', debug)
+        options.setdefault('use_debugger', debug)
+        options.setdefault('threaded', True)
+
+        from werkzeug.serving import run_simple
+
+        run_simple(host, port, self, **options)
