@@ -1,10 +1,16 @@
+import sys
 import typing as t
-from collections import UserDict
+from collections import UserDict, defaultdict
+from flask import Flask
 
 from werkzeug.utils import import_string
-from werkzeug.routing import Rule, Map
+from werkzeug.routing import Rule, Map, MapAdapter
+from flask.wrappers import Request, Response
+from flask.sessions import SecureCookieSessionInterface
 
 from cache import cached_property
+from ctx import RequestContext
+from globals import _sentinel
 
 T = t.TypeVar('T', bound='FakeFlask')
 
@@ -56,17 +62,26 @@ class FakeFlask:
 
     url_map_class = Map
 
+    request_class = Request
+
     secret_key = ConfigAttribute()
 
     default_config = {
         'ENV': None,
-        'SECRET_KEY': None
+        'SECRET_KEY': None,
+        'SERVER_NAME': None,
     }
+
+    session_interface = SecureCookieSessionInterface()
 
     def __init__(self) -> None:
         self.config = self.config_class(self.default_config)
         self.url_map = self.url_map_class()
         self.view_functions: t.Dict[str, t.Callable] = {}
+        self.teardown_request_funcs: t.Dict[
+            str, t.List[t.Callable[[Exception], None]]
+        ] = defaultdict(list)
+        self.teardown_appcontext_funcs: t.List[t.Callable[[Exception], None]] = []
 
     @cached_property  # Requires an instance dict
     def pi(self):
@@ -117,3 +132,48 @@ class FakeFlask:
         from werkzeug.serving import run_simple
 
         run_simple(host, port, self, **options)
+
+    def __call__(self, environ: t.Dict, start_response: t.Callable):
+        return self.wsgi_app(environ, start_response)
+    
+    def wsgi_app(self, environ: t.Dict, start_response: t.Callable):
+        ctx = RequestContext(self, environ)
+        error: t.Optional[Exception] = None
+        try:
+            try:
+                ctx.push()
+                response = self.full_dispatch_request()
+            except Exception as e:
+                error = e
+                response = self.handle_exception(e)
+            return response(environ, start_response)
+        finally:
+            ctx.pop(error)
+
+    def create_url_adapter(self, request: Request) -> MapAdapter:
+        subdomain = self.url_map.default_subdomain or None
+        return self.url_map.bind_to_environ(
+            request.environ,
+            server_name=self.config['SERVER_NAME'],
+            subdomain=subdomain
+        )
+
+    def do_teardown_request(self, exc: t.Optional[Exception] = _sentinel) -> None:
+        if exc is _sentinel:
+            exc = sys.exc_info()[1]
+
+        for name in self.teardown_request_funcs:
+            for func in reversed(self.teardown_request_funcs[name]):
+                # TODO: need to be a async execution
+                func(exc)
+
+    def do_teardown_appcontext(self, exc: t.Optional[Exception] = _sentinel) -> None:
+        if exc is _sentinel:
+            exc = sys.exc_info()[1]
+
+        for func in reversed(self.do_teardown_appcontext):
+            # TODO: need to be a async execution
+            func(exc)
+
+    def full_dispatch_request(self) -> Response:
+        pass
